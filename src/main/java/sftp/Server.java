@@ -86,10 +86,19 @@ public class Server {
     }
 
     private static void showHelpMsg() {
-        System.out.println("The valid parameters are:");
-        System.out.println(String.format("-d=<home directory> 'Set the SFTP server's home directory. Default value: %s'", DEFAULT_DIRECTORY));
-        System.out.println(String.format("-p=<listening port> 'Set the SFTP server's port. Default value: %d'", DEFAULT_PORT));
-        System.out.println("-h 'Show this message'");
+        // Text Block - Java 13 --enable-preview
+        /*System.out.println(String.format("""
+        The valid parameters are:
+        -d=<home directory> 'Set the SFTP server's home directory. Default value: %s'
+        -p=<listening port> 'Set the SFTP server's port. Default value: %d'
+        -h 'Show this message'
+        """ , DEFAULT_DIRECTORY, DEFAULT_PORT));*/
+
+        System.out.println(String.format(
+            "The valid parameters are:"
+            +"\n-d=<home directory> 'Set the SFTP server's home directory. Default value: %s'"
+            +"\n-p=<listening port> 'Set the SFTP server's port. Default value: %d'"
+            +"\n-h 'Show this message'" , DEFAULT_DIRECTORY, DEFAULT_PORT));
     }
 
     public static void main ( String args[] ) {
@@ -109,10 +118,11 @@ public class Server {
                 try{
                   argPort = Integer.parseInt(arg.substring(PARAM_KEY_LENGHT));
                 } catch(NumberFormatException nfe){
-                  System.out.println("Invalid number format entered with -p. Using default value of " + argPort);
-                  System.out.println("=======================");
-                  System.out.println(arg);
-                  System.out.println("=======================");
+                  System.out.println(String.format(
+                    "Invalid number format entered with -p. Using default value of %s"
+                    +"\n======================="
+                    +"\n%s"
+                    +"\n=======================",argPort, arg));
                 }
               else if (arg.equals("-h")){
                 showHelpMsg();

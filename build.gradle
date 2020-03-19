@@ -20,8 +20,8 @@ repositories {
     jcenter()
 }
 
-sourceCompatibility = 11
-targetCompatibility = 11
+sourceCompatibility = 13
+targetCompatibility = 13
 
 dependencies {
     // This dependency is exported to consumers, that is to say found on their compile classpath.
@@ -34,3 +34,10 @@ dependencies {
     testImplementation 'junit:junit:4.12'
 }
 
+/*tasks.withType(JavaCompile).each {
+	it.options.compilerArgs.add('--enable-preview')
+}
+
+test {
+	jvmArgs(['--enable-preview'])
+}*/
