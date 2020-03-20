@@ -39,9 +39,9 @@ public class Server {
     private static final String DEFAULT_DIRECTORY = ".";
     private static final int DEFAULT_PORT = 2222;
 
-    private int port;
-    private String folder;
-    private File server_key_file;
+    private final int port;
+    private final String folder;
+    private final File server_key_file;
     private boolean stopped;
     private SshServer sshd;
 
@@ -62,9 +62,6 @@ public class Server {
         return instance;
     }*/
 
-    // disabling the default Contructor
-    private Server(){}
-    
     private Server(int port, String folder) {
         this.port = port;
         this.folder = folder;
@@ -120,7 +117,7 @@ public class Server {
             return false;
         }
         stopped = false;
-        return !stopped;
+        return true;
     }
     
     public boolean stop() {
@@ -132,11 +129,11 @@ public class Server {
             return false;
         }
         stopped = true;
-        return stopped;
+        return true;
     }
 
     private static void showHelpMsg() {
-        // Text Block - Java 13 --enable-preview
+        // Text Block - Java 13 & 14 --enable-preview
         /*System.out.println(String.format("""
         The valid parameters are:
         -d=<home directory> 'Set the SFTP server's home directory. Default value: %s'
