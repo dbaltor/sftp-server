@@ -6,13 +6,18 @@ package sftp;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+import java.io.IOException;
+
 public class ServerTest {
     @Test public void testServerMethod() {
+        boolean serverStarted = false;
         Server serverUnderTest = new Server
             .Builder()
             .setPort(2222)
             .setFolder(".")
             .build();
-        assertTrue("testServerMethod should return 'true'", serverUnderTest.testServerMethod());
+        serverStarted = serverUnderTest.start();
+        assertTrue("testServerMethod should return 'true'", serverStarted);
+        serverUnderTest.stop();
     }
 }

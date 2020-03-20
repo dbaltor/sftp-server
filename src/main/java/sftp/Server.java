@@ -42,6 +42,8 @@ public class Server {
     private int port;
     private String folder;
     private File server_key_file;
+    private boolean stopped;
+    private SshServer sshd;
 
     // Singleton double checked locking implementation
     /*private static Server instance;
@@ -66,7 +68,8 @@ public class Server {
     private Server(int port, String folder) {
         this.port = port;
         this.folder = folder;
-        this.server_key_file = new File(String.format("hostkey%d.ser", port)); 
+        this.server_key_file = new File(String.format("hostkey%d.ser", port));
+        this.stopped = true;
     }
     public static class Builder {
         private int port;
@@ -83,6 +86,53 @@ public class Server {
         public Server build() {
             return new Server(port, folder);
         }
+    }
+
+    public boolean start() {
+
+        AbstractGeneratorHostKeyProvider hostKeyProvider =
+            new SimpleGeneratorHostKeyProvider(server_key_file.toPath());
+        hostKeyProvider.setAlgorithm("RSA");
+
+        sshd = SshServer.setUpDefaultServer();
+        sshd.setPort(port);
+        sshd.setKeyPairProvider(hostKeyProvider);        
+
+        List<NamedFactory<UserAuth>> userAuthFactories = new ArrayList<NamedFactory<UserAuth>>();
+        userAuthFactories.add(new UserAuthNoneFactory());
+        sshd.setUserAuthFactories(userAuthFactories);
+
+        sshd.setCommandFactory(new ScpCommandFactory());
+
+        List<NamedFactory<Command>> namedFactoryList = new ArrayList<NamedFactory<Command>>();
+        namedFactoryList.add(new SftpSubsystemFactory());
+        sshd.setSubsystemFactories(namedFactoryList);
+
+        VirtualFileSystemFactory fileSystemFactory = new VirtualFileSystemFactory();
+        fileSystemFactory.setDefaultHomeDir(folder);
+        sshd.setFileSystemFactory(fileSystemFactory);
+
+        try {
+            sshd.start();
+        }
+        catch (IOException ioe) {
+            ioe.printStackTrace();
+            return false;
+        }
+        stopped = false;
+        return !stopped;
+    }
+    
+    public boolean stop() {
+        try {
+            sshd.stop();
+        }
+        catch (IOException ioe) {
+            ioe.printStackTrace();
+            return false;
+        }
+        stopped = true;
+        return stopped;
     }
 
     private static void showHelpMsg() {
@@ -106,7 +156,7 @@ public class Server {
         String argFolder = System.getProperty("user.dir");
         int argPort = DEFAULT_PORT;
 
-        // Parse the command line arguments
+        // Parse command line's arguments
         final int PARAM_KEY_LENGHT = 3;
         if (args.length > 0) {
             for (String arg : args) {
@@ -122,38 +172,38 @@ public class Server {
                     "Invalid number format entered with -p. Using default value of %s"
                     +"\n======================="
                     +"\n%s"
-                    +"\n=======================",argPort, arg));
+                    +"\n=======================", argPort, arg));
                 }
               else if (arg.equals("-h")){
                 showHelpMsg();
                 System.exit(0);
               }
               else {
-                System.out.println("Invalid parameter found!");
-                System.out.println("=======================");
-                System.out.println(arg);
-                System.out.println("=======================");
+                System.out.println(String.format(
+                    "Invalid parameter found!"
+                    +"\n======================="
+                    +"\n%s"
+                    +"\n=======================", arg));
                 showHelpMsg();
                 System.exit(1);
               }
             }
-         }
-         // Start SFTP server
-         try {
-            Server server = new Server
-                .Builder()
-                .setPort(argPort)
-                .setFolder(argFolder)
-                .build();
-            server.startSftpServer();
         }
-        catch (IOException ioexception) {
-            ioexception.printStackTrace();
+
+        // Start SFTP server
+        Server server = new Server
+            .Builder()
+            .setPort(argPort)
+            .setFolder(argFolder)
+            .build();
+
+        if( !server.start()) {
             System.exit(1);
         }
-        System.out.println("SFTP server started...");
-        System.out.println(String.format("Server port: %d", argPort));
-        System.out.println(String.format("Server home dir: %s", argFolder));
+        System.out.println(String.format(
+            "SFTP server started..."
+            +"\nServer port: %d"
+            +"\nServer home dir: %s", argPort, argFolder));
 
         // Wait for QUIT command to exit
         try (Scanner scanner = new Scanner(System.in)) {
@@ -161,38 +211,12 @@ public class Server {
             do {
                 System.out.println("Enter 'q' or 'Q' to exit...");
                 keyedOp = scanner.nextLine();
-            } while (!("q".equals(keyedOp) || "Q".equals(keyedOp)));
+                if ("q".equals(keyedOp) || "Q".equals(keyedOp)) {
+                        if (!server.stop()){
+                            System.exit(1);
+                        }
+                }
+            } while (!server.stopped);
         }
-    }
-
-    public void startSftpServer() throws IOException {
-
-        AbstractGeneratorHostKeyProvider hostKeyProvider =
-            new SimpleGeneratorHostKeyProvider(server_key_file.toPath());
-        hostKeyProvider.setAlgorithm("RSA");
-
-        SshServer sshd = SshServer.setUpDefaultServer();
-        sshd.setPort(port);
-        sshd.setKeyPairProvider(hostKeyProvider);        
-
-        List<NamedFactory<UserAuth>> userAuthFactories = new ArrayList<NamedFactory<UserAuth>>();
-        userAuthFactories.add(new UserAuthNoneFactory());
-        sshd.setUserAuthFactories(userAuthFactories);
-
-        sshd.setCommandFactory(new ScpCommandFactory());
-
-        List<NamedFactory<Command>> namedFactoryList = new ArrayList<NamedFactory<Command>>();
-        namedFactoryList.add(new SftpSubsystemFactory());
-        sshd.setSubsystemFactories(namedFactoryList);
-
-        VirtualFileSystemFactory fileSystemFactory = new VirtualFileSystemFactory();
-        fileSystemFactory.setDefaultHomeDir(folder);
-        sshd.setFileSystemFactory(fileSystemFactory);
-
-        sshd.start();
-    }    
-
-    public boolean testServerMethod() {
-        return true;
     }
 }
