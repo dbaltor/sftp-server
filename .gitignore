@@ -6,3 +6,6 @@ build
 
 # hostkey files
 *.ser
+
+# binaries
+*.class
