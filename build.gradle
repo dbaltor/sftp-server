@@ -11,11 +11,11 @@ plugins {
     id 'application'
 }
 
-applicationDefaultJvmArgs = ["--enable-preview"]
-
 application {
     mainClassName = 'sftp.Server'
 }
+
+applicationDefaultJvmArgs = ["--enable-preview"]
 
 repositories {
     // Use jcenter for resolving dependencies.
