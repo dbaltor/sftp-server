@@ -4,6 +4,10 @@
 # Ignore Gradle build output directory
 build
 
+# Ignore env settings
+.vscode
+.settings
+
 # hostkey files
 *.ser
 
