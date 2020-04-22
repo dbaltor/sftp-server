@@ -68,15 +68,20 @@ public class Server {
         this.server_key_file = new File(String.format("hostkey%d.ser", port));
         this.stopped = true;
     }
-    public static class Builder {
+
+    public static ServerBuilder builder() {
+        return new ServerBuilder();
+    }
+
+    public static class ServerBuilder {
         private int port;
         private String folder;
 
-        public Builder setPort(int port) {
+        public ServerBuilder port(int port) {
             this.port = port;
             return this;
         }
-        public Builder setFolder(String folder){
+        public ServerBuilder folder(String folder){
             this.folder = folder;
             return this;
         }
@@ -188,10 +193,10 @@ public class Server {
         }
 
         // Start SFTP server
-        Server server = new Server
-            .Builder()
-            .setPort(argPort)
-            .setFolder(argFolder)
+        Server server = Server
+            .builder()
+            .port(argPort)
+            .folder(argFolder)
             .build();
 
         if( !server.start()) {

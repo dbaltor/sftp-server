@@ -9,10 +9,10 @@ import static org.junit.Assert.*;
 public class ServerTest {
     @Test public void testServerMethod() {
         boolean serverStarted = false;
-        Server serverUnderTest = new Server
-            .Builder()
-            .setPort(2222)
-            .setFolder(".")
+        Server serverUnderTest = Server
+            .builder()
+            .port(2222)
+            .folder(".")
             .build();
         serverStarted = serverUnderTest.start();
         assertTrue("testServerMethod should return 'true'", serverStarted);
