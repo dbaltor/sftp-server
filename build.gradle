@@ -11,6 +11,8 @@ plugins {
     id 'application'
 }
 
+applicationDefaultJvmArgs = ["--enable-preview"]
+
 application {
     mainClassName = 'sftp.Server'
 }
