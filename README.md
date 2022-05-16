@@ -1,4 +1,4 @@
-# Denis SFTP server
+# SFTP server
 Simple SFTP server implemented in Java<br>
 based on https://mina.apache.org/sshd-project/embedding_ssh.html 
 <p>
